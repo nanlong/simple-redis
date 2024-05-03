@@ -1,13 +1,13 @@
-mod array;
+pub mod array;
 mod bignumber;
 mod boolean;
 mod bulk_error;
 mod bulk_string;
 mod double;
-mod frame;
+pub mod frame;
 mod integer;
 mod map;
-mod null;
+pub mod null;
 mod set;
 mod simple_error;
 mod simple_string;

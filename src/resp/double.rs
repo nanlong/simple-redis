@@ -4,7 +4,7 @@ use anyhow::Result;
 
 use super::{get_line, get_u8, RespDecode, RespEncode, RespError};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Double {
     inner: f64,
 }

@@ -1,4 +1,5 @@
 use std::io::Cursor;
+use std::ops::Deref;
 
 use anyhow::Result;
 use bytes::Buf;
@@ -6,14 +7,14 @@ use bytes::Buf;
 use super::Frame;
 use super::{get_decimal, get_u8, RespDecode, RespEncode, RespError};
 
-#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Array {
-    pub data: Vec<Frame>,
+    pub(crate) inner: Vec<Frame>,
 }
 
 impl Array {
-    pub fn new(data: Vec<Frame>) -> Self {
-        Self { data }
+    pub fn new(inner: Vec<Frame>) -> Self {
+        Self { inner }
     }
 }
 
@@ -29,7 +30,7 @@ impl RespDecode for Array {
         }
 
         let len = get_decimal(buf)? as usize;
-        let mut data = Vec::with_capacity(len);
+        let mut inner = Vec::with_capacity(len);
 
         for _ in 0..len {
             if !buf.has_remaining() {
@@ -37,10 +38,10 @@ impl RespDecode for Array {
             }
 
             let frame = Frame::decode(buf)?;
-            data.push(frame);
+            inner.push(frame);
         }
 
-        Ok(Self::new(data))
+        Ok(Self::new(inner))
     }
 }
 
@@ -48,14 +49,22 @@ impl RespEncode for Array {
     fn encode(&self) -> Vec<u8> {
         let mut buf = Vec::new();
         buf.push(Self::PREFIX);
-        buf.extend(self.data.len().to_string().as_bytes());
+        buf.extend(self.inner.len().to_string().as_bytes());
         buf.extend_from_slice(b"\r\n");
 
-        for frame in &self.data {
+        for frame in &self.inner {
             buf.extend(frame.encode());
         }
 
         buf
+    }
+}
+
+impl Deref for Array {
+    type Target = Vec<Frame>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
     }
 }
 

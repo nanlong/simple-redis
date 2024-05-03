@@ -7,7 +7,7 @@ use super::{
     RespError,
 };
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Frame {
     SimpleString(SimpleString),
     SimpleError(SimpleError),
@@ -69,6 +69,12 @@ impl RespEncode for Frame {
     }
 }
 
+impl From<String> for Frame {
+    fn from(s: String) -> Self {
+        Frame::SimpleString(SimpleString::new(s))
+    }
+}
+
 impl From<&str> for Frame {
     fn from(s: &str) -> Self {
         Frame::SimpleString(SimpleString::new(s))
@@ -83,6 +89,12 @@ impl From<i64> for Frame {
 
 impl<const N: usize> From<&[u8; N]> for Frame {
     fn from(s: &[u8; N]) -> Self {
+        Frame::BulkString(BulkString::new(s.to_vec()))
+    }
+}
+
+impl From<&[u8]> for Frame {
+    fn from(s: &[u8]) -> Self {
         Frame::BulkString(BulkString::new(s.to_vec()))
     }
 }
