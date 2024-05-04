@@ -39,7 +39,6 @@ impl Deref for Store {
 }
 
 impl Store {
-    #[allow(dead_code)]
     pub fn new() -> Self {
         Self::default()
     }

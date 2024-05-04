@@ -25,8 +25,6 @@ impl TryFrom<Frame> for HSet {
         let mut parse = Parse::try_new(frame)?;
         let command = parse.next_string()?.to_uppercase();
 
-        println!("{:?}", command);
-
         if command != "HSET" {
             anyhow::bail!("Invalid command");
         }
