@@ -1,4 +1,4 @@
-use dashmap::DashMap;
+use dashmap::{DashMap, DashSet};
 use std::{ops::Deref, sync::Arc};
 
 use crate::resp::frame::Frame;
@@ -10,6 +10,7 @@ pub struct Store {
 
 #[derive(Debug)]
 pub struct StoreInner {
+    set: DashMap<String, DashSet<String>>,
     map: DashMap<String, Frame>,
     hmap: DashMap<String, DashMap<String, Frame>>,
 }
@@ -24,6 +25,7 @@ impl Default for Store {
 impl Default for StoreInner {
     fn default() -> Self {
         Self {
+            set: DashMap::new(),
             map: DashMap::new(),
             hmap: DashMap::new(),
         }
@@ -64,6 +66,27 @@ impl Store {
 
     pub fn hgetall(&self, key: &str) -> Option<DashMap<String, Frame>> {
         self.hmap.get(key).map(|v| v.clone())
+    }
+
+    pub fn sadd(&self, key: &str, field: &str) -> bool {
+        let set = self.set.entry(key.to_string()).or_default();
+
+        if set.contains(field) {
+            false
+        } else {
+            set.insert(field.to_string());
+            true
+        }
+    }
+
+    pub fn smembers(&self, key: &str) -> Option<Vec<String>> {
+        self.set
+            .get(key)
+            .map(|v| v.iter().map(|v| v.clone()).collect())
+    }
+
+    pub fn sismember(&self, key: &str, field: &str) -> bool {
+        self.set.get(key).map_or(false, |v| v.contains(field))
     }
 }
 

@@ -1,9 +1,14 @@
+mod echo;
 mod get;
 mod hget;
 mod hgetall;
+mod hmget;
 mod hset;
 mod parse;
+mod sadd;
 mod set;
+mod sismember;
+mod smembers;
 
 use crate::resp::frame::Frame;
 use crate::resp::null::Null;
@@ -31,6 +36,11 @@ pub enum Command {
     HGet(hget::HGet),
     HSet(hset::HSet),
     HGetAll(hgetall::HGetAll),
+    Echo(echo::Echo),
+    Hmget(hmget::Hmget),
+    Sadd(sadd::Sadd),
+    Smembers(smembers::Smembers),
+    Sismember(sismember::Sismember),
 }
 
 impl TryFrom<Frame> for Command {
@@ -46,6 +56,11 @@ impl TryFrom<Frame> for Command {
                 "HGET" => Ok(Command::HGet(frame.try_into()?)),
                 "HSET" => Ok(Command::HSet(frame.try_into()?)),
                 "HGETALL" => Ok(Command::HGetAll(frame.try_into()?)),
+                "ECHO" => Ok(Command::Echo(frame.try_into()?)),
+                "HMGET" => Ok(Command::Hmget(frame.try_into()?)),
+                "SADD" => Ok(Command::Sadd(frame.try_into()?)),
+                "SMEMBERS" => Ok(Command::Smembers(frame.try_into()?)),
+                "SISMEMBER" => Ok(Command::Sismember(frame.try_into()?)),
                 _ => anyhow::bail!("Invalid command"),
             },
             Err(_) => anyhow::bail!("Invalid command"),
@@ -116,7 +131,7 @@ mod tests {
         let hset_command: Command = frame.try_into().unwrap();
 
         let actual = hset_command.execute(store.clone()).unwrap();
-        assert_eq!(actual, *OK);
+        assert_eq!(actual, 1.into());
 
         let result = hget_command.execute(store.clone()).unwrap();
         assert_eq!(result, b"value".into());

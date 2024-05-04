@@ -4,7 +4,7 @@ use anyhow::Result;
 
 use super::{get_line, get_u8, RespDecode, RespEncode, RespError};
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Hash, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Null;
 
 impl RespDecode for Null {

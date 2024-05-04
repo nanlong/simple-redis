@@ -7,7 +7,7 @@ use super::{
     RespError,
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Hash, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Frame {
     SimpleString(SimpleString),
     SimpleError(SimpleError),
@@ -116,6 +116,12 @@ impl From<f64> for Frame {
         Frame::Double(Double::new(f))
     }
 }
+
+// impl From<Vec<String>> for Frame {
+//     fn from(v: Vec<String>) -> Self {
+//         Frame::Array(Array::new(v.into_iter().map(|s| s.into()).collect()))
+//     }
+// }
 
 #[cfg(test)]
 mod tests {

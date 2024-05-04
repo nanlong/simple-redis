@@ -1,4 +1,4 @@
-use std::io::Cursor;
+use std::{hash::Hash, io::Cursor};
 
 use anyhow::Result;
 
@@ -23,6 +23,12 @@ impl Ord for Double {
             Some(ordering) => ordering,
             None => std::cmp::Ordering::Less,
         }
+    }
+}
+
+impl Hash for Double {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.inner.to_string().hash(state);
     }
 }
 

@@ -22,6 +22,7 @@ pub enum ParseError {
 #[derive(Debug, Clone)]
 pub struct Parse {
     parts: IntoIter<Frame>,
+    length: usize,
 }
 
 impl Deref for Parse {
@@ -40,8 +41,13 @@ impl Parse {
         };
 
         Ok(Self {
+            length: array.inner.len(),
             parts: array.inner.into_iter(),
         })
+    }
+
+    pub fn length(&self) -> usize {
+        self.length
     }
 
     pub fn peek_string(&mut self) -> Result<String, ParseError> {
@@ -87,9 +93,11 @@ mod tests {
         let frame: Frame = vec!["get".into(), "key".into()].into();
         let actual = Parse::try_new(frame).unwrap();
         let expected = Parse {
+            length: 2,
             parts: vec!["get".into(), "key".into()].into_iter(),
         };
 
+        assert_eq!(actual.length, expected.length);
         assert_eq!(
             actual.parts.collect::<Vec<_>>(),
             expected.parts.collect::<Vec<_>>()

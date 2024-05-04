@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use super::{parse::Parse, CommandExecute, OK};
+use super::{parse::Parse, CommandExecute};
 use crate::resp::frame::Frame;
 use crate::store::Store;
 
@@ -14,7 +14,7 @@ pub struct HSet {
 impl CommandExecute for HSet {
     fn execute(&self, store: Store) -> Result<Frame> {
         store.hset(&self.key, &self.field, self.value.clone());
-        Ok(OK.clone())
+        Ok(1.into())
     }
 }
 

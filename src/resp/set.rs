@@ -7,7 +7,7 @@ use bytes::Buf;
 use super::Frame;
 use super::{get_decimal, get_u8, RespDecode, RespEncode, RespError};
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Hash, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Set {
     inner: BTreeSet<Frame>,
 }

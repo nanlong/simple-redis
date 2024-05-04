@@ -5,7 +5,7 @@ use bytes::Buf;
 
 use super::{get_decimal, get_u8, Frame, RespDecode, RespEncode, RespError};
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Hash, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Map {
     inner: BTreeMap<Frame, Frame>,
 }
