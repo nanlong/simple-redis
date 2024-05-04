@@ -2,8 +2,8 @@ use anyhow::Result;
 
 use super::parse::Parse;
 use super::CommandExecute;
+use crate::backend::Backend;
 use crate::resp::frame::Frame;
-use crate::store::Store;
 
 #[derive(Debug)]
 pub struct Sadd {
@@ -12,8 +12,8 @@ pub struct Sadd {
 }
 
 impl CommandExecute for Sadd {
-    fn execute(&self, store: Store) -> Result<Frame> {
-        match store.sadd(&self.key, &self.field) {
+    fn execute(&self, backend: Backend) -> Result<Frame> {
+        match backend.sadd(&self.key, &self.field) {
             true => Ok(1.into()),
             false => Ok(0.into()),
         }
@@ -42,8 +42,8 @@ impl TryFrom<Frame> for Sadd {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::backend::Backend;
     use crate::resp::RespDecode;
-    use crate::store::Store;
     use std::io::Cursor;
 
     fn parse_cmd(input: &[u8]) -> Result<Sadd> {
@@ -74,8 +74,8 @@ mod tests {
         let input = b"*3\r\n$4\r\nSADD\r\n$3\r\nkey\r\n$5\r\nvalue\r\n";
         let cmd = parse_cmd(input).unwrap();
 
-        let store = Store::new();
-        let result = cmd.execute(store);
+        let backend = Backend::new();
+        let result = cmd.execute(backend);
 
         assert_eq!(result.unwrap(), 1.into());
     }

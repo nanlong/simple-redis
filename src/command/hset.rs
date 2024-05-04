@@ -1,8 +1,8 @@
 use anyhow::Result;
 
 use super::{parse::Parse, CommandExecute};
+use crate::backend::Backend;
 use crate::resp::frame::Frame;
-use crate::store::Store;
 
 #[derive(Debug)]
 pub struct HSet {
@@ -12,8 +12,8 @@ pub struct HSet {
 }
 
 impl CommandExecute for HSet {
-    fn execute(&self, store: Store) -> Result<Frame> {
-        store.hset(&self.key, &self.field, self.value.clone());
+    fn execute(&self, backend: Backend) -> Result<Frame> {
+        backend.hset(&self.key, &self.field, self.value.clone());
         Ok(1.into())
     }
 }

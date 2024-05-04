@@ -2,8 +2,8 @@ use anyhow::Result;
 
 use super::parse::Parse;
 use super::CommandExecute;
+use crate::backend::Backend;
 use crate::resp::frame::Frame;
-use crate::store::Store;
 
 #[derive(Debug)]
 pub struct Echo {
@@ -11,7 +11,7 @@ pub struct Echo {
 }
 
 impl CommandExecute for Echo {
-    fn execute(&self, _store: Store) -> Result<Frame> {
+    fn execute(&self, _backend: Backend) -> Result<Frame> {
         Ok(self.message.clone())
     }
 }
@@ -66,8 +66,8 @@ mod tests {
             message: b"message".into(),
         };
 
-        let store = Store::new();
-        let result = cmd.execute(store);
+        let backend = Backend::new();
+        let result = cmd.execute(backend);
 
         assert_eq!(result.unwrap(), b"message".into());
     }

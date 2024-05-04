@@ -1,9 +1,9 @@
 mod codec;
 mod request;
 
+use crate::backend::Backend;
 use crate::command::Command;
 use crate::resp::frame::Frame;
-use crate::store::Store;
 use anyhow::Result;
 use codec::RespFrameCodec;
 use futures::SinkExt;
@@ -13,14 +13,14 @@ use tokio_stream::StreamExt;
 use tokio_util::codec::Framed;
 use tracing::info;
 
-pub async fn stream_handle(stream: TcpStream, store: Store) -> Result<()> {
+pub async fn stream_handle(stream: TcpStream, backend: Backend) -> Result<()> {
     let mut framed = Framed::new(stream, RespFrameCodec);
 
     loop {
         match framed.next().await {
             Some(Ok(frame)) => {
                 info!("Received frame: {:?}", frame);
-                let response = request_handle(frame, store.clone()).await?;
+                let response = request_handle(frame, backend.clone()).await?;
                 framed.send(response).await?;
             }
             Some(Err(e)) => return Err(e),
@@ -29,9 +29,9 @@ pub async fn stream_handle(stream: TcpStream, store: Store) -> Result<()> {
     }
 }
 
-pub async fn request_handle(frame: Frame, store: Store) -> Result<Frame> {
+pub async fn request_handle(frame: Frame, backend: Backend) -> Result<Frame> {
     let command = Command::try_from(frame)?;
-    let request = RespRequest::new(command, store);
+    let request = RespRequest::new(command, backend);
     let response = request.execute()?;
     Ok(response)
 }

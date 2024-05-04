@@ -1,8 +1,8 @@
 use anyhow::Result;
 
 use super::{parse::Parse, CommandExecute, NULL};
+use crate::backend::Backend;
 use crate::resp::frame::Frame;
-use crate::store::Store;
 
 #[derive(Debug)]
 pub struct HGetAll {
@@ -10,10 +10,10 @@ pub struct HGetAll {
 }
 
 impl CommandExecute for HGetAll {
-    fn execute(&self, store: Store) -> Result<Frame> {
+    fn execute(&self, backend: Backend) -> Result<Frame> {
         let mut frame: Vec<Frame> = vec![];
 
-        match store.hgetall(&self.key) {
+        match backend.hgetall(&self.key) {
             Some(hmap) => {
                 for (field, value) in hmap {
                     frame.push(field.as_bytes().into());

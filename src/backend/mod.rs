@@ -4,25 +4,25 @@ use std::{ops::Deref, sync::Arc};
 use crate::resp::frame::Frame;
 
 #[derive(Debug, Clone)]
-pub struct Store {
-    inner: Arc<StoreInner>,
+pub struct Backend {
+    inner: Arc<BackendInner>,
 }
 
 #[derive(Debug)]
-pub struct StoreInner {
+pub struct BackendInner {
     set: DashMap<String, DashSet<String>>,
     map: DashMap<String, Frame>,
     hmap: DashMap<String, DashMap<String, Frame>>,
 }
 
-impl Default for Store {
+impl Default for Backend {
     fn default() -> Self {
-        let inner = Arc::new(StoreInner::default());
+        let inner = Arc::new(BackendInner::default());
         Self { inner }
     }
 }
 
-impl Default for StoreInner {
+impl Default for BackendInner {
     fn default() -> Self {
         Self {
             set: DashMap::new(),
@@ -32,15 +32,15 @@ impl Default for StoreInner {
     }
 }
 
-impl Deref for Store {
-    type Target = StoreInner;
+impl Deref for Backend {
+    type Target = BackendInner;
 
     fn deref(&self) -> &Self::Target {
         &self.inner
     }
 }
 
-impl Store {
+impl Backend {
     pub fn new() -> Self {
         Self::default()
     }
@@ -95,27 +95,27 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_store_get_set() {
-        let store = Store::new();
-        store.set("key", "value".into());
-        let result = store.get("key").unwrap();
+    fn test_backend_get_set() {
+        let backend = Backend::new();
+        backend.set("key", "value".into());
+        let result = backend.get("key").unwrap();
         assert_eq!(result, "value".into());
     }
 
     #[test]
-    fn test_store_hset_hget() {
-        let store = Store::new();
-        store.hset("key", "field", "value".into());
-        let result = store.hget("key", "field").unwrap();
+    fn test_backend_hset_hget() {
+        let backend = Backend::new();
+        backend.hset("key", "field", "value".into());
+        let result = backend.hget("key", "field").unwrap();
         assert_eq!(result, "value".into());
     }
 
     #[test]
-    fn test_store_hgetall() {
-        let store = Store::new();
-        store.hset("key", "field1", "value1".into());
-        store.hset("key", "field2", "value2".into());
-        let result = store.hgetall("key").unwrap();
+    fn test_backend_hgetall() {
+        let backend = Backend::new();
+        backend.hset("key", "field1", "value1".into());
+        backend.hset("key", "field2", "value2".into());
+        let result = backend.hgetall("key").unwrap();
         assert_eq!(result.len(), 2);
     }
 }

@@ -2,8 +2,8 @@ use anyhow::Result;
 
 use super::parse::Parse;
 use super::{CommandExecute, NULL};
+use crate::backend::Backend;
 use crate::resp::frame::Frame;
-use crate::store::Store;
 
 #[derive(Debug)]
 pub struct HGet {
@@ -12,8 +12,8 @@ pub struct HGet {
 }
 
 impl CommandExecute for HGet {
-    fn execute(&self, store: Store) -> Result<Frame> {
-        match store.hget(&self.key, &self.field) {
+    fn execute(&self, backend: Backend) -> Result<Frame> {
+        match backend.hget(&self.key, &self.field) {
             Some(value) => Ok(value),
             None => Ok(NULL.clone()),
         }

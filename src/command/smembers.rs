@@ -2,8 +2,8 @@ use anyhow::Result;
 
 use super::parse::Parse;
 use super::CommandExecute;
+use crate::backend::Backend;
 use crate::resp::frame::Frame;
-use crate::store::Store;
 
 #[derive(Debug)]
 pub struct Smembers {
@@ -11,8 +11,8 @@ pub struct Smembers {
 }
 
 impl CommandExecute for Smembers {
-    fn execute(&self, store: Store) -> Result<Frame> {
-        let result = store.smembers(&self.key);
+    fn execute(&self, backend: Backend) -> Result<Frame> {
+        let result = backend.smembers(&self.key);
 
         match result {
             Some(set) => Ok(set
@@ -46,8 +46,8 @@ impl TryFrom<Frame> for Smembers {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::backend::Backend;
     use crate::resp::RespDecode;
-    use crate::store::Store;
     use std::io::Cursor;
 
     fn parse_cmd(input: &[u8]) -> Result<Smembers> {
@@ -79,8 +79,8 @@ mod tests {
         let input = b"*2\r\n$8\r\nSMEMBERS\r\n$3\r\nkey\r\n";
         let cmd = parse_cmd(input).unwrap();
 
-        let store = Store::new();
-        let result = cmd.execute(store);
+        let backend = Backend::new();
+        let result = cmd.execute(backend);
 
         assert_eq!(result.unwrap(), Vec::<Frame>::new().into());
     }

@@ -3,8 +3,8 @@ use anyhow::Result;
 use super::parse::Parse;
 use super::CommandExecute;
 use super::NULL;
+use crate::backend::Backend;
 use crate::resp::frame::Frame;
-use crate::store::Store;
 
 #[derive(Debug)]
 pub struct Hmget {
@@ -13,11 +13,11 @@ pub struct Hmget {
 }
 
 impl CommandExecute for Hmget {
-    fn execute(&self, store: Store) -> Result<Frame> {
+    fn execute(&self, backend: Backend) -> Result<Frame> {
         let mut result = Vec::with_capacity(self.fields.len());
 
         for field in &self.fields {
-            match store.hget(&self.key, field) {
+            match backend.hget(&self.key, field) {
                 Some(value) => result.push(value),
                 None => result.push(NULL.clone()),
             }
@@ -56,8 +56,8 @@ impl TryFrom<Frame> for Hmget {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::backend::Backend;
     use crate::resp::RespDecode;
-    use crate::store::Store;
     use std::io::Cursor;
 
     fn parse_cmd(input: &[u8]) -> Result<Hmget> {
@@ -88,15 +88,15 @@ mod tests {
 
     #[test]
     fn test_hmget_execute() {
-        let store = Store::new();
+        let backend = Backend::new();
 
-        store.hset("myhash", "field1", b"value1".into());
-        store.hset("myhash", "field2", b"value2".into());
+        backend.hset("myhash", "field1", b"value1".into());
+        backend.hset("myhash", "field2", b"value2".into());
 
         let input = b"*5\r\n$5\r\nhmget\r\n$6\r\nmyhash\r\n$6\r\nfield1\r\n$6\r\nfield2\r\n$7\r\nnofield\r\n";
         let cmd = parse_cmd(&input[..]).unwrap();
 
-        let result = cmd.execute(store).unwrap();
+        let result = cmd.execute(backend).unwrap();
 
         match result {
             Frame::Array(array) => {

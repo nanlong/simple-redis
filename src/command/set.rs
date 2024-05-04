@@ -1,8 +1,8 @@
 use anyhow::Result;
 
 use super::{parse::Parse, CommandExecute, OK};
+use crate::backend::Backend;
 use crate::resp::frame::Frame;
-use crate::store::Store;
 
 #[derive(Debug)]
 pub struct Set {
@@ -11,8 +11,8 @@ pub struct Set {
 }
 
 impl CommandExecute for Set {
-    fn execute(&self, store: Store) -> Result<Frame> {
-        store.set(self.key.clone(), self.value.clone());
+    fn execute(&self, backend: Backend) -> Result<Frame> {
+        backend.set(self.key.clone(), self.value.clone());
         Ok(OK.clone())
     }
 }

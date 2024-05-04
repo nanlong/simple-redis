@@ -2,8 +2,8 @@ use anyhow::Result;
 
 use super::parse::Parse;
 use super::{CommandExecute, NULL};
+use crate::backend::Backend;
 use crate::resp::frame::Frame;
-use crate::store::Store;
 
 #[derive(Debug)]
 pub struct Get {
@@ -11,8 +11,8 @@ pub struct Get {
 }
 
 impl CommandExecute for Get {
-    fn execute(&self, store: Store) -> Result<Frame> {
-        match store.get(&self.key) {
+    fn execute(&self, backend: Backend) -> Result<Frame> {
+        match backend.get(&self.key) {
             Some(value) => Ok(value),
             None => Ok(NULL.clone()),
         }

@@ -10,9 +10,9 @@ mod set;
 mod sismember;
 mod smembers;
 
+use crate::backend::Backend;
 use crate::resp::frame::Frame;
 use crate::resp::null::Null;
-use crate::store::Store;
 use anyhow::Result;
 use enum_dispatch::enum_dispatch;
 use lazy_static::lazy_static;
@@ -25,7 +25,7 @@ lazy_static! {
 
 #[enum_dispatch]
 pub trait CommandExecute {
-    fn execute(&self, store: Store) -> Result<Frame>;
+    fn execute(&self, backend: Backend) -> Result<Frame>;
 }
 
 #[enum_dispatch(CommandExecute)]
@@ -93,32 +93,32 @@ mod tests {
 
     #[test]
     fn test_command_get_and_set() {
-        let store = Store::new();
+        let backend = Backend::new();
 
         let frame: Frame = vec![b"get".into(), b"key".into()].into();
         let get_command: Command = frame.try_into().unwrap();
 
-        let actual = get_command.execute(store.clone()).unwrap();
+        let actual = get_command.execute(backend.clone()).unwrap();
         assert_eq!(actual, *NULL);
 
         let frame: Frame = vec![b"set".into(), b"key".into(), b"value".into()].into();
         let set_command: Command = frame.try_into().unwrap();
 
-        let actual = set_command.execute(store.clone()).unwrap();
+        let actual = set_command.execute(backend.clone()).unwrap();
         assert_eq!(actual, *OK);
 
-        let result = get_command.execute(store.clone()).unwrap();
+        let result = get_command.execute(backend.clone()).unwrap();
         assert_eq!(result, b"value".into());
     }
 
     #[test]
     fn test_command_hget_and_hset() {
-        let store = Store::new();
+        let backend = Backend::new();
 
         let frame: Frame = vec![b"hget".into(), b"key".into(), b"field".into()].into();
         let hget_command: Command = frame.try_into().unwrap();
 
-        let actual = hget_command.execute(store.clone()).unwrap();
+        let actual = hget_command.execute(backend.clone()).unwrap();
         assert_eq!(actual, *NULL);
 
         let frame: Frame = vec![
@@ -130,21 +130,21 @@ mod tests {
         .into();
         let hset_command: Command = frame.try_into().unwrap();
 
-        let actual = hset_command.execute(store.clone()).unwrap();
+        let actual = hset_command.execute(backend.clone()).unwrap();
         assert_eq!(actual, 1.into());
 
-        let result = hget_command.execute(store.clone()).unwrap();
+        let result = hget_command.execute(backend.clone()).unwrap();
         assert_eq!(result, b"value".into());
     }
 
     #[test]
     fn test_command_hgetall() {
-        let store = Store::new();
+        let backend = Backend::new();
 
         let frame: Frame = vec![b"hgetall".into(), b"key".into()].into();
         let hgetall_command: Command = frame.try_into().unwrap();
 
-        let actual = hgetall_command.execute(store.clone()).unwrap();
+        let actual = hgetall_command.execute(backend.clone()).unwrap();
         assert_eq!(actual, *NULL);
 
         let frame: Frame = vec![
@@ -155,7 +155,7 @@ mod tests {
         ]
         .into();
         let hset_command: Command = frame.try_into().unwrap();
-        hset_command.execute(store.clone()).unwrap();
+        hset_command.execute(backend.clone()).unwrap();
 
         let frame: Frame = vec![
             b"hset".into(),
@@ -165,9 +165,9 @@ mod tests {
         ]
         .into();
         let hset_command: Command = frame.try_into().unwrap();
-        hset_command.execute(store.clone()).unwrap();
+        hset_command.execute(backend.clone()).unwrap();
 
-        let result = hgetall_command.execute(store.clone()).unwrap();
+        let result = hgetall_command.execute(backend.clone()).unwrap();
 
         match result {
             Frame::Array(array) => {
