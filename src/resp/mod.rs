@@ -16,9 +16,22 @@ use std::io::Cursor;
 
 use anyhow::Result;
 use bytes::Buf;
+use enum_dispatch::enum_dispatch;
 use thiserror::Error;
 
+use array::Array;
+use bignumber::BigNumber;
+use boolean::Boolean;
+use bulk_error::BulkError;
+use bulk_string::BulkString;
+use double::Double;
 use frame::Frame;
+use integer::Integer;
+use map::Map;
+use null::Null;
+use set::Set;
+use simple_error::SimpleError;
+use simple_string::SimpleString;
 
 #[derive(Debug, Error)]
 pub enum RespError {
@@ -47,6 +60,7 @@ pub trait RespDecode: Sized {
     fn decode(buf: &mut Cursor<&[u8]>) -> Result<Self, RespError>;
 }
 
+#[enum_dispatch]
 pub trait RespEncode {
     fn encode(&self) -> Vec<u8>;
 }

@@ -1,12 +1,13 @@
+use enum_dispatch::enum_dispatch;
 use std::io::Cursor;
 
 use super::{
     array::Array, bignumber::BigNumber, boolean::Boolean, bulk_error::BulkError,
     bulk_string::BulkString, double::Double, integer::Integer, map::Map, null::Null, peek_u8,
-    set::Set, simple_error::SimpleError, simple_string::SimpleString, RespDecode, RespEncode,
-    RespError,
+    set::Set, simple_error::SimpleError, simple_string::SimpleString, RespDecode, RespError,
 };
 
+#[enum_dispatch(RespEncode)]
 #[derive(Debug, Hash, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Frame {
     SimpleString(SimpleString),
@@ -30,41 +31,22 @@ impl RespDecode for Frame {
         let prefix = peek_u8(buf)?;
 
         match prefix {
-            b'+' => SimpleString::decode(buf).map(Frame::SimpleString),
-            b'-' => SimpleError::decode(buf).map(Frame::SimpleError),
-            b':' => Integer::decode(buf).map(Frame::Integer),
-            b'$' => BulkString::decode(buf).map(Frame::BulkString),
-            b'*' => Array::decode(buf).map(Frame::Array),
-            b'_' => Null::decode(buf).map(Frame::Null),
-            b'#' => Boolean::decode(buf).map(Frame::Boolean),
-            b',' => Double::decode(buf).map(Frame::Double),
-            b'(' => BigNumber::decode(buf).map(Frame::BigNumber),
-            b'!' => BulkError::decode(buf).map(Frame::BulkError),
-            b'%' => Map::decode(buf).map(Frame::Map),
-            b'~' => Set::decode(buf).map(Frame::Set),
+            b'+' => SimpleString::decode(buf).map(Into::into),
+            b'-' => SimpleError::decode(buf).map(Into::into),
+            b':' => Integer::decode(buf).map(Into::into),
+            b'$' => BulkString::decode(buf).map(Into::into),
+            b'*' => Array::decode(buf).map(Into::into),
+            b'_' => Null::decode(buf).map(Into::into),
+            b'#' => Boolean::decode(buf).map(Into::into),
+            b',' => Double::decode(buf).map(Into::into),
+            b'(' => BigNumber::decode(buf).map(Into::into),
+            b'!' => BulkError::decode(buf).map(Into::into),
+            b'%' => Map::decode(buf).map(Into::into),
+            b'~' => Set::decode(buf).map(Into::into),
             _ => Err(RespError::InvalidType(format!(
                 "Invalid prefix for Frame: {:?}",
                 buf.get_ref()
             ))),
-        }
-    }
-}
-
-impl RespEncode for Frame {
-    fn encode(&self) -> Vec<u8> {
-        match self {
-            Frame::SimpleString(inner) => inner.encode(),
-            Frame::SimpleError(inner) => inner.encode(),
-            Frame::Integer(inner) => inner.encode(),
-            Frame::BulkString(inner) => inner.encode(),
-            Frame::Array(inner) => inner.encode(),
-            Frame::Null(inner) => inner.encode(),
-            Frame::Boolean(inner) => inner.encode(),
-            Frame::Double(inner) => inner.encode(),
-            Frame::BigNumber(inner) => inner.encode(),
-            Frame::BulkError(inner) => inner.encode(),
-            Frame::Map(inner) => inner.encode(),
-            Frame::Set(inner) => inner.encode(),
         }
     }
 }
@@ -116,12 +98,6 @@ impl From<f64> for Frame {
         Frame::Double(Double::new(f))
     }
 }
-
-// impl From<Vec<String>> for Frame {
-//     fn from(v: Vec<String>) -> Self {
-//         Frame::Array(Array::new(v.into_iter().map(|s| s.into()).collect()))
-//     }
-// }
 
 #[cfg(test)]
 mod tests {
