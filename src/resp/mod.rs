@@ -73,6 +73,12 @@ fn get_decimal(buf: &mut Cursor<&[u8]>) -> Result<u64, RespError> {
     Ok(inner)
 }
 
+fn get_int(buf: &mut Cursor<&[u8]>) -> Result<i64, RespError> {
+    let line = get_line(buf)?;
+    let inner = std::str::from_utf8(line)?.parse()?;
+    Ok(inner)
+}
+
 fn get_line<'a>(buf: &mut Cursor<&'a [u8]>) -> Result<&'a [u8], RespError> {
     let start = buf.position() as usize;
     let end = buf.get_ref().len() - 1;
